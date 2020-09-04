@@ -4,8 +4,10 @@ class TaskModel {
   String taskTitle;
   String taskContent;
   String recDate;
-  String everyDay;
+  String infinite;
   int sinceEpoch;
+  String isFavorite;
+  String isDone;
 
   TaskModel({
     this.type,
@@ -13,8 +15,10 @@ class TaskModel {
     this.taskTitle,
     this.taskContent,
     this.recDate,
-    this.everyDay,
+    this.infinite,
     this.sinceEpoch,
+    this.isFavorite,
+    this.isDone,
   });
 
   TaskModel.fromJson(Map<String, dynamic> json) {
@@ -23,8 +27,10 @@ class TaskModel {
     taskTitle = json['taskTitle'];
     taskContent = json['taskContent'];
     recDate = json['recDate'];
-    everyDay = json['everyDay'];
+    infinite = json['infinite'];
     sinceEpoch = json['sinceEpoch'];
+    isFavorite = json['isFavorite'];
+    isDone = json['isDone'];
   }
 
   Map<String, dynamic> toJson() {
@@ -34,8 +40,10 @@ class TaskModel {
     data['taskTitle'] = this.taskTitle;
     data['taskContent'] = this.taskContent;
     data['recDate'] = this.recDate;
-    data['everyDay'] = this.everyDay;
+    data['infinite'] = this.infinite;
     data['sinceEpoch'] = this.sinceEpoch;
+    data['isFavorite'] = this.isFavorite;
+    data['isDone'] = this.isDone;
     return data;
   }
 
@@ -47,8 +55,10 @@ class TaskModel {
     this.taskTitle = tempMap["taskTitle"];
     this.taskContent = tempMap["taskContent"];
     this.recDate = tempMap["taskRecDate"];
-    this.everyDay = tempMap["taskEveryDay"];
+    this.infinite = tempMap["taskInfinite"];
     this.sinceEpoch = tempMap["taskSinceEpoch"];
+    this.isFavorite = tempMap["taskIsFavorite"];
+    this.isDone = tempMap["taskIsDone"];
   }
 
   Map<String, dynamic> toMap() {
@@ -58,8 +68,10 @@ class TaskModel {
     map["taskTitle"] = this.taskTitle.toString();
     map["taskContent"] = this.taskContent.toString();
     map["taskRecDate"] = this.recDate.toString();
-    map["taskEveryDay"] = this.everyDay.toString();
+    map["taskInfinite"] = this.infinite.toString();
     map["taskSinceEpoch"] = this.sinceEpoch;
+    map["taskIsFavorite"] = this.isFavorite;
+    map["taskIsDone"] = this.isDone;
     return map;
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:task_tool/models/taskModel.dart';
+import 'package:task_tool/models/task_model.dart';
 import 'package:task_tool/network/task_sqflite_manager.dart';
-import 'package:task_tool/presentation/screens/create_task_page.dart';
+import 'package:task_tool/presentation/screens/task_operations.dart';
+import 'package:task_tool/utils/common_widgets.dart';
 
 class AllDailyTasksPage extends StatefulWidget {
   @override
@@ -10,25 +11,39 @@ class AllDailyTasksPage extends StatefulWidget {
 
 class _AllDailyTasksPageState extends State<AllDailyTasksPage> {
   List<TaskModel> allTasks;
+  List<TaskModel> favTasks;
 
   _getTasks(String whichTypeOfTask) async {
     await TaskSqFliteManager().getTasks(whichTypeOfTask).then((value) {
-      this.setState(() {
-        allTasks = value;
-      });
+      if (value != null) {
+        for (var item in value) {
+          if (item.isFavorite == "Yes") {
+            favTasks.add(item);
+          } else {
+            allTasks.add(item);
+          }
+        }
+      }
+      this.setState(() {});
     });
   }
 
   @override
   void initState() {
     super.initState();
+    allTasks = List<TaskModel>();
+    favTasks = List<TaskModel>();
     _getTasks("Daily");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: Colors.blue.shade500,
+        elevation: 0,
         title: Text(
           "Daily Tasks",
         ),
@@ -38,7 +53,7 @@ class _AllDailyTasksPageState extends State<AllDailyTasksPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CreateTaskPage(
+                  builder: (context) => TaskOperations(
                     whichTaskType: "Daily",
                   ),
                 ),
@@ -46,65 +61,12 @@ class _AllDailyTasksPageState extends State<AllDailyTasksPage> {
             },
             child: Text(
               "New Tasks",
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            allTasks != null && allTasks.length > 0
-                ? ListView.builder(
-                    itemBuilder: (context, index) {
-                      return _sampleWidget(index);
-                    },
-                    itemCount: allTasks.length,
-                    primary: false,
-                    shrinkWrap: true,
-                  )
-                : Container(
-                    padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.height / 3,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "We can't find any recorded task",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  _sampleWidget(int index) {
-    return ListTile(
-      title: Text(
-        allTasks[index].taskTitle,
-        style: TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      subtitle: allTasks[index].taskContent.length < 20
-          ? Text(
-              allTasks[index].taskContent,
-              style: TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-              ),
-            )
-          : Text(
-              allTasks[index].taskContent.substring(0, 19),
-              style: TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+      body: CommonWidgets().taskDesignWidget(context, allTasks, favTasks),
     );
   }
 }

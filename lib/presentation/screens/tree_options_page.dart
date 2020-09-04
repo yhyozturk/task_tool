@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:task_tool/network/task_sqflite_manager.dart';
 import 'package:task_tool/presentation/screens/all_daily_tasks_page.dart';
 import 'package:task_tool/presentation/screens/all_monthly_tasks_page.dart';
 import 'package:task_tool/presentation/screens/all_weekly_tasks_page.dart';
+import 'package:task_tool/presentation/screens/settingsPage.dart';
 
 class TreeOptionsPage extends StatefulWidget {
   @override
@@ -9,12 +11,12 @@ class TreeOptionsPage extends StatefulWidget {
 }
 
 class _TreeOptionsPageState extends State<TreeOptionsPage> {
-  List<String> allTask;
+  List<String> allTaskTypes;
 
   @override
   void initState() {
     super.initState();
-    allTask = ["Daily", "Weekly", "Monthly"];
+    allTaskTypes = ["Daily", "Weekly", "Monthly"];
   }
 
   @override
@@ -24,12 +26,27 @@ class _TreeOptionsPageState extends State<TreeOptionsPage> {
         title: Text(
           "Task Types",
         ),
+        actions: [
+          IconButton(
+            padding: EdgeInsets.only(right: 5),
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SettingsPage(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: ListView.builder(
-        itemCount: allTask.length,
+        itemCount: allTaskTypes.length,
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
+              TaskSqFliteManager().deleteEpochLimitTasks(allTaskTypes[index]);
               chooseAPage(index);
             },
             child: Container(
@@ -45,13 +62,12 @@ class _TreeOptionsPageState extends State<TreeOptionsPage> {
               padding: EdgeInsets.all(5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                
                 children: [
                   chooseAnIcon(index),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      allTask[index],
+                      allTaskTypes[index],
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,

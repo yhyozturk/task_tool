@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:task_tool/models/taskModel.dart';
+import 'package:task_tool/models/task_model.dart';
 import 'package:task_tool/network/task_sqflite_manager.dart';
 
-class CreateTaskPage extends StatefulWidget {
+class TaskOperations extends StatefulWidget {
   final String whichTaskType;
-  CreateTaskPage({@required this.whichTaskType});
+  final TaskModel updateTask;
+  TaskOperations({@required this.whichTaskType, this.updateTask});
   @override
-  _CreateTaskPageState createState() => _CreateTaskPageState();
+  _TaskOperationsState createState() => _TaskOperationsState();
 }
 
-class _CreateTaskPageState extends State<CreateTaskPage> {
+class _TaskOperationsState extends State<TaskOperations> {
   TextEditingController titleTextController;
   TextEditingController contentTextController;
   final formKey = GlobalKey<FormState>();
   TaskModel taskModel;
+  bool chcPermanent = false;
 
   @override
   void initState() {
     super.initState();
-    titleTextController = TextEditingController();
-    contentTextController = TextEditingController();
+    titleTextController = TextEditingController(
+        text: widget.updateTask != null ? widget.updateTask.taskTitle : "");
+    contentTextController = TextEditingController(
+        text: widget.updateTask != null ? widget.updateTask.taskContent : "");
     taskModel = TaskModel();
   }
 
@@ -28,7 +32,11 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Create " + widget.whichTaskType + " Task"),
+        title: Text(
+          (widget.updateTask != null ? "Update " : "Create ") +
+              widget.whichTaskType +
+              " Task",
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -83,6 +91,26 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    "Is it permanent",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  Checkbox(
+                    value: chcPermanent,
+                    onChanged: (value) {
+                      this.setState(() {
+                        chcPermanent = value;
+                      });
+                    },
+                  )
+                ],
+              ),
+            ),
             Container(
               decoration: BoxDecoration(
                 color: Colors.redAccent,
@@ -92,19 +120,25 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
               child: FlatButton(
                 onPressed: () {
                   if (formKey.currentState.validate()) {
-                    DateTime now = DateTime.now();
                     formKey.currentState.save();
                     taskModel.type = widget.whichTaskType;
-                    taskModel.recDate =
-                        DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-                    taskModel.sinceEpoch = now.millisecondsSinceEpoch.abs();
-                    //TODO: when firebase added...
-                    TaskSqFliteManager().handleCreateTask(taskModel);
+                    taskModel.isFavorite = "No";
+                    taskModel.isDone = "Not";
+                    taskModel.infinite = chcPermanent ? "Permanent" : "Timely";
+                    if (widget.updateTask != null) {
+                      _updateTaskMethod();
+                    } else {
+                      _createTaskMethod();
+                    }
+
+                    Navigator.pop(context);
                     Navigator.pop(context);
                   }
                 },
                 child: Text(
                   "SUBMIT",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             )
@@ -112,5 +146,20 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         ),
       ),
     );
+  }
+
+  _updateTaskMethod() {
+    taskModel.recDate = widget.updateTask.recDate;
+    taskModel.sinceEpoch = widget.updateTask.sinceEpoch;
+    taskModel.taskID = widget.updateTask.taskID;
+    TaskSqFliteManager().updateTask(taskModel);
+  }
+
+  _createTaskMethod() {
+    DateTime now = DateTime.now();
+    taskModel.recDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+    taskModel.sinceEpoch = now.millisecondsSinceEpoch.abs();
+    //TODO: when firebase added...
+    TaskSqFliteManager().handleCreateTask(taskModel);
   }
 }
