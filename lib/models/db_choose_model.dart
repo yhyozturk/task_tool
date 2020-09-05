@@ -16,6 +16,7 @@ class DBChooseModel {
     return data;
   }
 
+  //Lokal veritabanı map<> olarak sonuç verdiği ve insert ederken ise map<> olarak istediği için .fromMap ve toMap metotları yazılmıştır.
   DBChooseModel.fromMap(Map<String, dynamic> tempMap) {
     this.lokalID = tempMap["dbcLokalID"];
     this.name = tempMap["dbcName"];

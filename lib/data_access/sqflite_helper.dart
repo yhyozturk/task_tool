@@ -12,6 +12,7 @@ class SqfliteHelper {
 
   SqfliteHelper._internal();
 
+  //Bu alanlar, ilgili methodları yazarken veritabanı ve kolon isimlerinde yapılabilecek hata oranını azaltmak için yazıldı.
   String _taskTable = "tblTask";
   String _columnTaskType = "taskType";
   String _columnTaskID = "taskID";
@@ -27,6 +28,7 @@ class SqfliteHelper {
   String _columnLokalID = "dbcLokalID";
   String _columnDBName = "dbcName";
 
+  //Telefon dosyaları arasında oluşturulmul bir veri tabanı varsa tekrar oluşturulması engellendi
   factory SqfliteHelper() {
     if (_sqfliteHelper == null) {
       _sqfliteHelper = SqfliteHelper._internal();
@@ -37,6 +39,7 @@ class SqfliteHelper {
     }
   }
 
+  // Singleton kullanılarak her _getDatabase() kullanıldığında aynı db dönmesi sağlandı.
   Future<Database> _getDatabase() async {
     if (_database == null) {
       _database = await _initializeDatabase();
@@ -46,15 +49,18 @@ class SqfliteHelper {
     }
   }
 
+  //Lokal veritabanını oluşturan metot
   _initializeDatabase() async {
-    Directory directory = await getApplicationDocumentsDirectory();
-    String path = join(directory.path, "task_tool_v0.0.7.db");
 
-    var dbInfo = await openDatabase(path, version: 1, onCreate: _createDB);
+    Directory directory = await getApplicationDocumentsDirectory(); //Uygulamanın dosya yolu alınıyor
+    String path = join(directory.path, "task_tool_v0.0.7.db");  // .db uzantılı olması şartıyla benzersiz bir isim veriliyor
+
+    var dbInfo = await openDatabase(path, version: 1, onCreate: _createDB); //Verilen bilgilerle db'yi döndüren metot
 
     return dbInfo;
   }
 
+  // Oluşturulacak tabloların sql cümleleri derleniyor
   Future _createDB(Database db, int version) async {
     await db.execute(
       "CREATE TABLE $_taskTable ($_columnTaskID INTEGER PRIMARY KEY, $_columnTaskType TEXT," +
@@ -68,6 +74,7 @@ class SqfliteHelper {
     );
   }
 
+  //Ayarlar sekmeksinde uygulamanın çalışma şeklini seçerken önceki seçime ulaşmamızı sağlayan metot
   Future<DBChooseModel> getDBChoose() async {
     var db = await _getDatabase();
     var result = await db.rawQuery("SELECT * FROM $_dbChooseTable");
@@ -78,6 +85,7 @@ class SqfliteHelper {
     }
   }
 
+  //Ayarlardan db seçimini ilk defa yaptığımızda çalışan metot
   Future<int> insertDBChoose(DBChooseModel dbc) async {
     var db = await _getDatabase();
     var result = await db.insert(_dbChooseTable, dbc.toMap());
@@ -85,6 +93,7 @@ class SqfliteHelper {
     return result;
   }
 
+  //Ayarlardan db seçimini değiştirdiğimizde gerekli güncellemeyi yapan metot
   Future<int> updateDBChoose(DBChooseModel dbc) async {
     var db = await _getDatabase();
     var result = await db.update(_dbChooseTable, dbc.toMap());
@@ -92,6 +101,7 @@ class SqfliteHelper {
     return result;
   }
 
+  //Verilen görev tipine göre veritabanında yer alan bütün görevler listesine ulaşmamızı sağlayan metot
   Future<List<TaskModel>> getTasks(String whichTypeOfTasks) async {
     var db = await _getDatabase();
     var result = await db.rawQuery(
@@ -107,6 +117,7 @@ class SqfliteHelper {
     return allTasks;
   }
 
+  //Gelen modelde yer alan bilgilerle veritabanına  görev insert eden metot
   Future<int> createTask(TaskModel task) async {
     var db = await _getDatabase();
     var result = await db.insert(_taskTable, task.toMap());
@@ -114,6 +125,7 @@ class SqfliteHelper {
     return result;
   }
 
+  //Gelen modelde yer alan bilgilere göre veritabanındaki kolonları güncelleyen metot
   Future<int> updateTask(TaskModel taskModel) async {
     var db = await _getDatabase();
     var result = await db.rawUpdate(
@@ -123,6 +135,7 @@ class SqfliteHelper {
     return result;
   }
 
+  //Sadece görev tamamlandı ve tamamlanmadı güncellemesi için yazılmış metot
   Future<int> updateTaskToDoneOrNot(TaskModel taskModel) async {
     var db = await _getDatabase();
     var result = await db.rawUpdate(
@@ -133,6 +146,7 @@ class SqfliteHelper {
     return result;
   }
 
+  //Sadece görevi önemli/yıldızlı olarak işaretlemek ve çıkarmak için yazılmış bir metot
   Future<int> updateTasktToFavorite(TaskModel taskModel) async {
     var db = await _getDatabase();
     var result = await db.rawUpdate(
@@ -142,6 +156,8 @@ class SqfliteHelper {
     return result;
   }
 
+  //Daha önce kayıt edilmiş görevler görüntülenmek için ana menüden ilgili butona tıklandığında;
+  //eğer görev oluşturulurken kalıcı olarak işaretlenmediyse, günü geçen görevleri silen metot
   Future<int> deleteEpochLimitTasks(String whichTypeOfTasks) async {
     var db = await _getDatabase();
     int epochLimit = 0;
@@ -173,6 +189,7 @@ class SqfliteHelper {
     return result;
   }
 
+  //Kullanıcının isteği üzerine belirlediği görevi veritabanından silen metot
   Future<int> deleteTask(int taskID) async {
     var db = await _getDatabase();
     var result = await db

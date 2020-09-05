@@ -14,9 +14,11 @@ class CommonWidgets {
     return SingleChildScrollView(
       child: Column(
         children: [
+          //parametre olarak gelen listelerin null veya içi boş olup olmadığı kontrol ediliyor
           (allTasks == null || allTasks.length <= 0) &&
                   (favTasks == null || favTasks.length <= 0)
               ? Container(
+                //Listelerin null veya içi boş olması durumunda ekranda yer alacak yazıyı tutan widget
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).size.height / 3,
                   ),
@@ -31,10 +33,12 @@ class CommonWidgets {
                 )
               : Column(
                   children: [
+                    //Eğer kişinin favori listesinde görev varsa, bu liste kullanılarak bir builder metodu çalıştırılıyor
                     favTasks.length > 0
                         ? ListView.builder(
                             padding: EdgeInsets.only(top: 15),
                             itemBuilder: (context, index) {
+                              //Sayfanın aşağısında yer alan bu metot listenin her elemanı için ayrı ayrı çalışır.
                               return _sampleWidget(
                                 allTasks: favTasks,
                                 index: index,
@@ -42,12 +46,14 @@ class CommonWidgets {
                               );
                             },
                             itemCount: favTasks.length,
-                            primary: false,
-                            shrinkWrap: true,
+                            primary: false, // Sayfada parent widget olarak SinglechildScrollView yer aldığı için bu listenin scroll özelliği false atanıyor
+                            // Uzun listelerde, liste elemanının görüntülenme sırası geldiğinde anlık olarak derlenmesini sağlayan, sayfanın yüklenme esnasında performansını düşürmemek için kullanılmıştır
+                            shrinkWrap: true, 
                           )
                         : SizedBox(
                             height: 1,
                           ),
+                    // favori listesinde yapılanlar geri kalan görevler için de burada yapılıyor
                     allTasks.length > 0
                         ? ListView.builder(
                             padding: EdgeInsets.only(top: 15),
@@ -72,6 +78,7 @@ class CommonWidgets {
     );
   }
 
+    //builder metodu içerisinde kullanılan örnek widget döndüren bu metot, verilen liste uzunluğuna göre bir for döngüsü gibi çalışmaktadır.
   _sampleWidget({
     List<TaskModel> allTasks,
     int index,
@@ -92,6 +99,8 @@ class CommonWidgets {
             fontWeight: FontWeight.bold,
           ),
         ),
+        //Eğer görev içeriği 20 karakterden büyük veya eşitse substring ile ekrana sadece ilk 19 karakter yazdırılıyor,
+        //Kişi görev içeriğinin tamamını görebilmek için görev üzerine tıklayıp detay sayfasına geçmelidir.
         subtitle: allTasks[index].taskContent.length < 20
             ? Text(
                 allTasks[index].taskContent,
@@ -108,6 +117,7 @@ class CommonWidgets {
                 ),
               ),
         onTap: () {
+          //Kişi, gerekli parametrelerle görev detay sayfasına yönlendiriliyor
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -119,12 +129,17 @@ class CommonWidgets {
           );
         },
         onLongPress: () {
+          /*Kişi bir görevi silmek istediğinde ilgili liste elemanına longPress yaptıktan sonra, tekrar "silmek istediğinize emin misiniz?" 
+            sorusuna verilen cevaba göre çalışacak kodlar
+          */
           AlertHelper().yesNoAlertDraft(
               context, "Attention", "Are you sure you want to delete", () {
+                //yesNoAlertDraft parametreleri arasında görebileceğini gibi ilk fonksiyon evet fonksiyonu olduğu için görev silme işlemi yapılıyor
             String lokalType = allTasks[index].type;
             TaskSqFliteManager().deleteTask(allTasks[index].taskID);
             allTasks.removeAt(index);
             Navigator.pop(context);
+            //
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
